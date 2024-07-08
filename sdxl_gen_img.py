@@ -30,6 +30,7 @@ except Exception:
 import torchvision
 from diffusers import (
     AutoencoderKL,
+    DPMSolverSDEScheduler,
     DDPMScheduler,
     EulerAncestralDiscreteScheduler,
     DPMSolverMultistepScheduler,
@@ -1437,6 +1438,12 @@ def main(args):
         scheduler_module = diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete
         scheduler_num_noises_per_step = 2
         has_clip_sample = False
+    elif args.sampler == "dpm++_sde_k":
+        scheduler_cls = DPMSolverSDEScheduler
+        # JAG - scheduling_dpmsolver_sd is not present in the version of diffusers I am using
+        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_sd
+        has_clip_sample = False
+        # sched_init_args["noise_sampler_seed"] = 0
 
     # 警告を出さないようにする
     if has_steps_offset:
@@ -1494,6 +1501,10 @@ def main(args):
         beta_schedule=SCHEDLER_SCHEDULE,
         **sched_init_args,
     )
+
+    if args.sampler == "dpm++_sde_k":
+        print('Using dpm++_sde_k sampler!')
+        scheduler.config.use_karras_sigmas = True
 
     # ↓以下は結局PipeでFalseに設定されるので意味がなかった
     # # clip_sample=Trueにする
@@ -2642,6 +2653,7 @@ def setup_parser() -> argparse.ArgumentParser:
             "k_euler_a",
             "k_dpm_2",
             "k_dpm_2_a",
+            "dpm++_sde_k",
         ],
         help=f"sampler (scheduler) type / サンプラー（スケジューラ）の種類",
     )
