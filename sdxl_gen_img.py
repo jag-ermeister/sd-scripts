@@ -1444,6 +1444,13 @@ def main(args):
         scheduler_module = diffusers.schedulers.scheduling_dpmsolver_sd
         has_clip_sample = False
         # sched_init_args["noise_sampler_seed"] = 0
+    # DPM++ 2M SDE Karras
+    elif args.sampler == "dmp++_2m_sde_karras":
+        scheduler_cls = DPMSolverMultistepScheduler
+        sched_init_args["algorithm_type"] = "sde-dpmsolver++"
+        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_multistep
+        has_clip_sample = False
+
 
     # 警告を出さないようにする
     if has_steps_offset:
@@ -1504,6 +1511,9 @@ def main(args):
 
     if args.sampler == "dpm++_sde_k":
         print('Using dpm++_sde_k sampler!')
+        scheduler.config.use_karras_sigmas = True
+    elif args.sampler == "dmp++_2m_sde_karras":
+        print('Using dmp++_2m_sde_karras sampler!')
         scheduler.config.use_karras_sigmas = True
 
     # ↓以下は結局PipeでFalseに設定されるので意味がなかった
@@ -2654,6 +2664,7 @@ def setup_parser() -> argparse.ArgumentParser:
             "k_dpm_2",
             "k_dpm_2_a",
             "dpm++_sde_k",
+            "dmp++_2m_sde_karras",
         ],
         help=f"sampler (scheduler) type / サンプラー（スケジューラ）の種類",
     )
