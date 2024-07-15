@@ -44,6 +44,7 @@ from diffusers import (
     KDPM2AncestralDiscreteScheduler,
     # UNet2DConditionModel,
     StableDiffusionPipeline,
+    UniPCMultistepScheduler,
 )
 from einops import rearrange
 from tqdm import tqdm
@@ -1442,7 +1443,7 @@ def main(args):
         has_clip_sample = False
     elif args.sampler == "dpm++_sde_k":
         scheduler_cls = DPMSolverSDEScheduler
-        # JAG - scheduling_dpmsolver_sd is not present in the version of diffusers I am using
+        # JAG - AttributeError: module diffusers.schedulers has no attribute scheduling_dpmsolver_sde
         scheduler_module = diffusers.schedulers.scheduling_dpmsolver_sde
         has_clip_sample = False
         # sched_init_args["noise_sampler_seed"] = 0
@@ -1451,6 +1452,10 @@ def main(args):
         scheduler_cls = DPMSolverMultistepScheduler
         sched_init_args["algorithm_type"] = "sde-dpmsolver++"
         scheduler_module = diffusers.schedulers.scheduling_dpmsolver_multistep
+        has_clip_sample = False
+    elif args.sampler == "unipc":
+        scheduler_cls = UniPCMultistepScheduler
+        scheduler_module = diffusers.schedulers.scheduling_unipc_multistep
         has_clip_sample = False
 
 
@@ -2667,6 +2672,7 @@ def setup_parser() -> argparse.ArgumentParser:
             "k_dpm_2_a",
             "dpm++_sde_k",
             "dmp++_2m_sde_karras",
+            "unipc",
         ],
         help=f"sampler (scheduler) type / サンプラー（スケジューラ）の種類",
     )
