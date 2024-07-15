@@ -1443,7 +1443,7 @@ def main(args):
     elif args.sampler == "dpm++_sde_k":
         scheduler_cls = DPMSolverSDEScheduler
         # JAG - scheduling_dpmsolver_sd is not present in the version of diffusers I am using
-        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_sd
+        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_sde
         has_clip_sample = False
         # sched_init_args["noise_sampler_seed"] = 0
     # DPM++ 2M SDE Karras
