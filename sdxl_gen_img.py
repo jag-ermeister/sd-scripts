@@ -1441,6 +1441,10 @@ def main(args):
         scheduler_module = diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete
         scheduler_num_noises_per_step = 2
         has_clip_sample = False
+    elif args.sampler == "dpm++_2m_karras":
+        scheduler_cls = DPMSolverMultistepScheduler
+        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_multistep
+        has_clip_sample = False
     elif args.sampler == "dpm++_sde_k":
         scheduler_cls = DPMSolverSDEScheduler
         # JAG - AttributeError: module diffusers.schedulers has no attribute scheduling_dpmsolver_sde
@@ -1516,11 +1520,8 @@ def main(args):
         **sched_init_args,
     )
 
-    if args.sampler == "dpm++_sde_k":
-        print('Using dpm++_sde_k sampler!')
-        scheduler.config.use_karras_sigmas = True
-    elif args.sampler == "dmp++_2m_sde_karras":
-        print('Using dmp++_2m_sde_karras sampler!')
+    if args.sampler in ["dpm++_sde_k", "dmp++_2m_sde_karras", "dpm++_2m_karras"]:
+        print(f"Using {args.sampler} sampler!")
         scheduler.config.use_karras_sigmas = True
 
     # ↓以下は結局PipeでFalseに設定されるので意味がなかった
@@ -2649,6 +2650,7 @@ def setup_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--no_half_vae", action="store_true", help="do not use fp16/bf16 precision for VAE / VAE処理時にfp16/bf16を使わない")
     parser.add_argument("--steps", type=int, default=50, help="number of ddim sampling steps / サンプリングステップ数")
+    # A111 to Diffusers scheduler mapping: https://huggingface.co/docs/diffusers/v0.26.2/en/api/schedulers/overview#schedulers
     parser.add_argument(
         "--sampler",
         type=str,
@@ -2670,6 +2672,7 @@ def setup_parser() -> argparse.ArgumentParser:
             "k_euler_a",
             "k_dpm_2",
             "k_dpm_2_a",
+            "dpm++_2m_karras",
             "dpm++_sde_k",
             "dmp++_2m_sde_karras",
             "unipc",
